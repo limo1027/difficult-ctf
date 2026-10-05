@@ -1,0 +1,15 @@
+venv/
+logs/
+**/flag.txt
+**/__pycache__/
+**/*.db
+**/challenge.png
+**/pack.zip
+**/secret.zip
+**/output.jpeg
+**/.enc
+**/key*.txt
+8011/.git/
+.vscode/
+.idea/
+8009/ctf_8009

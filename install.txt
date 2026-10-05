@@ -1,0 +1,9 @@
+Flask
+PyJWT
+requests
+playwright
+Pillow
+qrcode
+numpy
+pyzipper
+pyotp
