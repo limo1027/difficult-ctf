@@ -1,7 +1,6 @@
 import os
+from flask import Flask, make_response
 import random
-from flask import Flask
-
 
 app = Flask(__name__)
 if os.path.exists("flag.txt"):
@@ -11,21 +10,13 @@ else:
         "ctfhub{" + "".join(random.choices("1234567890ABCDEF", k=20)) + "}"
 with open("flag.txt", mode='w') as f:
     f.write(flag)
-html = f"""
-<html>
-<head>
-<title>hidden flag</title>
-</head>
-<body>
-<p>flag is not here.</p>
-</body>
-<!-- {flag} -->
-</html>"""
 
 
-@app.route("/")
+@app.route('/')
 def index():
-    return html
+    resp = make_response("The flag is at a hidden location.")
+    resp.headers['X-Flag'] = flag   # ← flag 藏在自定义响应头里
+    return resp
 
 
 if __name__ == "__main__":

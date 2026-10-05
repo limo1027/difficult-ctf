@@ -221,7 +221,7 @@ def index():
         <div class="container">
             <h1>🧪 SSTI Playground</h1>
             <p class="sub">🔒 Jinja2 Template Engine</p>
-
+            <p class="sub">The answer is FLAG attribute of Flag object</p>
             <div class="demo">
                 💡 <span>Example:</span> <code style="color:#00ff00;">Hello {{ name }}!</code>
             </div>

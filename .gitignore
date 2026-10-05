@@ -13,3 +13,4 @@ logs/
 .vscode/
 .idea/
 8009/ctf_8009
+**/uploads
