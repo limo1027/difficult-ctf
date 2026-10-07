@@ -36,6 +36,7 @@ button { background:#0f0; color:#000; border:none; padding:10px 30px; font-weigh
         <button type="submit">Upload</button>
     </form>
     <p class="hint">💡 This server reloads automatically.</p>
+    <p class="hint">💡 Call likes curl -X POST -F "file=@/path/to/yourfile.txt" http://192.168.1.3:8005/upload</p>
 </div>
 </body>
 </html>

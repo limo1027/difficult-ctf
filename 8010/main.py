@@ -103,46 +103,48 @@ def init_db():
 init_db()
 
 # ==================== 首页博客 ====================
-BLOG_HTML = f"""
+BLOG_HTML = """
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>My Blog</title>
 <style>
-    * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-    body {{ font-family: 'Georgia', serif; background: #fafafa; color: #222; line-height: 1.8; }}
-    .navbar {{
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Georgia', serif; background: #fafafa; color: #222; line-height: 1.8; }
+    .navbar {
         background: #2c3e50; padding: 18px 40px; display: flex;
         justify-content: space-between; align-items: center;
         position: sticky; top: 0; z-index: 100;
         box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    }}
-    .navbar .logo {{ color: #ecf0f1; font-size: 22px; font-weight: bold; letter-spacing: 1px; }}
-    .navbar .logo span {{ color: #e74c3c; }}
-    .navbar a {{ color: #ecf0f1; margin-left: 18px; text-decoration: none; }}
-    .navbar .login-btn {{
+    }
+    .navbar .logo { color: #ecf0f1; font-size: 22px; font-weight: bold; letter-spacing: 1px; }
+    .navbar .logo span { color: #e74c3c; }
+    .navbar a { color: #ecf0f1; margin-left: 18px; text-decoration: none; }
+    .navbar a:hover { color: #e74c3c; }
+    .navbar .login-btn {
         background: #e74c3c; color: #fff; border: none; padding: 10px 28px;
         font-size: 14px; border-radius: 25px; cursor: pointer; transition: 0.3s;
         text-decoration: none; font-weight: bold;
-    }}
-    .navbar .login-btn:hover {{ background: #c0392b; transform: scale(1.05); }}
-    .container {{ max-width: 780px; margin: 50px auto; padding: 0 20px; }}
-    .post {{
+    }
+    .navbar .login-btn:hover { background: #c0392b; transform: scale(1.05); }
+    .container { max-width: 780px; margin: 50px auto; padding: 0 20px; }
+    .card {
         background: #fff; padding: 45px 55px; border-radius: 10px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-    }}
-    .post h1 {{
+    }
+    .card h1 {
         font-size: 30px; color: #2c3e50; border-bottom: 2px solid #ecf0f1;
         padding-bottom: 12px; margin-bottom: 8px;
-    }}
-    .post .meta {{ color: #b0b0b0; font-size: 13px; margin-bottom: 25px; }}
-    .post .meta span {{ margin-right: 18px; }}
-    .post p {{ margin-bottom: 18px; font-size: 16.5px; color: #333; }}
-    .post .footer-note {{
+    }
+    .meta { color: #b0b0b0; font-size: 13px; margin-bottom: 25px; }
+    .meta span { margin-right: 18px; }
+    .card p { margin-bottom: 18px; font-size: 16.5px; color: #333; }
+    .footer-note {
         margin-top: 30px; padding-top: 18px; border-top: 1px solid #eee;
         font-size: 13px; color: #bbb; text-align: center;
-    }}
+    }
+    a { color: #e74c3c; }
 </style>
 </head>
 <body>
@@ -154,7 +156,7 @@ BLOG_HTML = f"""
     </div>
 </nav>
 <div class="container">
-    <div class="post">
+    <div class="card">
         <h1>My Trip to the Countryside</h1>
         <div class="meta">
             <span>📅 August 23, 2026</span>
@@ -172,106 +174,248 @@ BLOG_HTML = f"""
         <div class="footer-note">
             💡 If you're reading this, you probably have too much time on your hands.
         </div>
-        <!-- {HIDDEN}Don't cost too time of this.-->
+        <!-- %HIDDEN%Don't cost too time of this.-->
     </div>
 </div>
 </body>
 </html>
-"""
+""".replace("%HIDDEN%", HIDDEN)
 
-# ==================== 登录 / 密码 / TOTP ====================
+# ==================== 登录页（三合一表单）====================
 LOGIN_HTML = """
 <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Login</title>
 <style>
-body{font-family:monospace;min-height:100vh;display:flex;justify-content:center;align-items:center;background:#0a0a0a;color:#0f0;}
-.container{background:#111;padding:50px 60px;border-radius:12px;border:1px solid #0f0;text-align:center;max-width:420px;width:100%;}
-h2{font-size:22px;margin-bottom:10px;} .sub{color:#888;font-size:13px;margin-bottom:25px;}
-input{width:100%;padding:12px;background:#1a1a1a;border:1px solid #0f0;color:#0f0;font-size:16px;border-radius:6px;outline:none;font-family:monospace;}
-button{width:100%;padding:12px;margin-top:15px;background:#0f0;color:#000;border:none;font-size:16px;font-weight:bold;border-radius:6px;cursor:pointer;}
-button:hover{background:#0c0;} .error{color:#f44;margin-top:12px;font-size:14px;}
-a{color:#0f0;}
-</style></head><body>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Georgia', serif; background: #fafafa; color: #222; line-height: 1.8; }
+    .navbar {
+        background: #2c3e50; padding: 18px 40px; display: flex;
+        justify-content: space-between; align-items: center;
+        position: sticky; top: 0; z-index: 100;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .navbar .logo { color: #ecf0f1; font-size: 22px; font-weight: bold; letter-spacing: 1px; }
+    .navbar .logo span { color: #e74c3c; }
+    .navbar a { color: #ecf0f1; margin-left: 18px; text-decoration: none; }
+    .navbar a:hover { color: #e74c3c; }
+    .navbar .login-btn {
+        background: #e74c3c; color: #fff; border: none; padding: 10px 28px;
+        font-size: 14px; border-radius: 25px; cursor: pointer; transition: 0.3s;
+        text-decoration: none; font-weight: bold;
+    }
+    .navbar .login-btn:hover { background: #c0392b; transform: scale(1.05); }
+    .container { max-width: 780px; margin: 50px auto; padding: 0 20px; }
+    .card {
+        background: #fff; padding: 45px 55px; border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        max-width: 460px; margin: 0 auto;
+    }
+    .card h2 { font-size: 22px; color: #2c3e50; margin-bottom: 10px; }
+    .meta { color: #b0b0b0; font-size: 13px; margin-bottom: 25px; }
+    .field { text-align: left; margin-bottom: 18px; }
+    .field label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
+    input {
+        width: 100%; padding: 12px 14px; background: #fff;
+        border: 1px solid #ddd; color: #222; font-size: 15px;
+        border-radius: 6px; outline: none; font-family: inherit;
+        transition: border-color 0.2s;
+    }
+    input:focus { border-color: #e74c3c; }
+    input.code { text-align: center; letter-spacing: 4px; font-family: monospace; }
+    button {
+        width: 100%; padding: 12px; margin-top: 8px; background: #e74c3c;
+        color: #fff; border: none; font-size: 16px; font-weight: bold;
+        border-radius: 6px; cursor: pointer; transition: 0.2s;
+    }
+    button:hover { background: #c0392b; }
+    .error { color: #e74c3c; margin-top: 12px; font-size: 14px; }
+    a { color: #e74c3c; }
+</style>
+</head><body>
+<nav class="navbar">
+    <div class="logo">📖 My<span>Blog</span></div>
+    <div>
+        <a href="/comments">💬 Comments</a>
+        <a href="/login" class="login-btn">🔑 Login</a>
+    </div>
+</nav>
 <div class="container">
+<div class="card">
 <h2>🔐 Authentication</h2>
-<p class="sub">Enter your username</p>
+<p class="meta">Enter your credentials</p>
 {% if error %}<div class="error">{{ error }}</div>{% endif %}
 <form method="post">
-<input type="text" name="username" placeholder="Username" autofocus>
-<button type="submit">Verify</button>
+  <div class="field">
+    <label>① Username</label>
+    <input type="text" name="username" placeholder="Username" autofocus>
+  </div>
+  <div class="field">
+    <label>② Password</label>
+    <input type="password" name="password" placeholder="Password">
+  </div>
+  <div class="field">
+    <label>③ Two-Factor Code</label>
+    <input type="text" name="code" class="code" placeholder="123456" maxlength="6">
+  </div>
+  <button type="submit">Verify</button>
 </form>
-<p style="margin-top:15px"><a href="/">← Back to blog</a></p>
-</div></body></html>
+<p style="margin-top:18px;text-align:center;font-size:14px;"><a href="/">← Back to blog</a></p>
+</div>
+</div>
+</body></html>
 """
 
-PASSWORD_HTML = """
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Login</title>
-<style>
-body{font-family:monospace;min-height:100vh;display:flex;justify-content:center;align-items:center;background:#0a0a0a;color:#0f0;}
-.container{background:#111;padding:50px 60px;border-radius:12px;border:1px solid #0f0;text-align:center;max-width:420px;width:100%;}
-h2{font-size:22px;margin-bottom:10px;} .sub{color:#888;font-size:13px;margin-bottom:25px;}
-input{width:100%;padding:12px;background:#1a1a1a;border:1px solid #0f0;color:#0f0;font-size:16px;border-radius:6px;outline:none;font-family:monospace;}
-button{width:100%;padding:12px;margin-top:15px;background:#0f0;color:#000;border:none;font-size:16px;font-weight:bold;border-radius:6px;cursor:pointer;}
-button:hover{background:#0c0;} .error{color:#f44;margin-top:12px;font-size:14px;}
-a{color:#0f0;}
-</style></head><body>
-<div class="container">
-<h2>🔐 Authentication</h2>
-<p class="sub">Enter your password</p>
-{% if error %}<div class="error">{{ error }}</div>{% endif %}
-<form method="post">
-<input type="password" name="password" placeholder="Password" autofocus>
-<button type="submit">Verify</button>
-</form>
-<p style="margin-top:15px"><a href="/login">← Back</a></p>
-</div></body></html>
-"""
-
-TOTP_HTML = """
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>TOTP</title>
-<style>
-body{font-family:monospace;min-height:100vh;display:flex;justify-content:center;align-items:center;background:#0a0a0a;color:#0f0;}
-.container{background:#111;padding:50px 60px;border-radius:12px;border:1px solid #0f0;text-align:center;max-width:420px;width:100%;}
-h2{font-size:22px;margin-bottom:10px;} .sub{color:#888;font-size:13px;margin-bottom:25px;}
-input{width:100%;padding:12px;background:#1a1a1a;border:1px solid #0f0;color:#0f0;font-size:16px;border-radius:6px;outline:none;font-family:monospace;text-align:center;letter-spacing:4px;}
-button{width:100%;padding:12px;margin-top:15px;background:#0f0;color:#000;border:none;font-size:16px;font-weight:bold;border-radius:6px;cursor:pointer;}
-button:hover{background:#0c0;} .error{color:#f44;margin-top:12px;font-size:14px;}
-a{color:#0f0;}
-</style></head><body>
-<div class="container">
-<h2>🔐 Two-Factor</h2>
-<p class="sub">Enter the 6-digit code</p>
-{% if error %}<div class="error">{{ error }}</div>{% endif %}
-<form method="post">
-<input type="text" name="code" placeholder="123456" maxlength="6" autofocus>
-<button type="submit">Verify</button>
-</form>
-<p style="margin-top:15px"><a href="/password">← Back</a></p>
-</div></body></html>
-"""
-
+# ==================== 仪表盘 ====================
 DASHBOARD_HTML = """
 <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Dashboard</title>
 <style>
-body{font-family:monospace;min-height:100vh;display:flex;justify-content:center;align-items:center;background:#0a0a0a;color:#0f0;}
-.container{background:#111;padding:50px 60px;border-radius:12px;border:1px solid #0f0;text-align:center;max-width:560px;width:100%;}
-h2{font-size:24px;margin-bottom:10px;} .sub{color:#888;font-size:14px;margin-bottom:25px;}
-a.btn{display:inline-block;margin:8px;padding:12px 35px;background:#0f0;color:#000;text-decoration:none;border-radius:6px;font-weight:bold;}
-a.btn:hover{background:#0c0;}
-.logout{background:#f44;color:#fff;} .logout:hover{background:#c00;}
-.hint{color:#fa0;font-size:13px;margin-top:20px;line-height:1.6;}
-</style></head><body>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Georgia', serif; background: #fafafa; color: #222; line-height: 1.8; }
+    .navbar {
+        background: #2c3e50; padding: 18px 40px; display: flex;
+        justify-content: space-between; align-items: center;
+        position: sticky; top: 0; z-index: 100;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .navbar .logo { color: #ecf0f1; font-size: 22px; font-weight: bold; letter-spacing: 1px; }
+    .navbar .logo span { color: #e74c3c; }
+    .navbar a { color: #ecf0f1; margin-left: 18px; text-decoration: none; }
+    .navbar a:hover { color: #e74c3c; }
+    .navbar .login-btn {
+        background: #e74c3c; color: #fff; border: none; padding: 10px 28px;
+        font-size: 14px; border-radius: 25px; cursor: pointer; transition: 0.3s;
+        text-decoration: none; font-weight: bold;
+    }
+    .navbar .login-btn:hover { background: #c0392b; transform: scale(1.05); }
+    .container { max-width: 780px; margin: 50px auto; padding: 0 20px; }
+    .card {
+        background: #fff; padding: 45px 55px; border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        text-align: center;
+    }
+    .card h2 { font-size: 24px; color: #2c3e50; margin-bottom: 10px; }
+    .meta { color: #b0b0b0; font-size: 14px; margin-bottom: 25px; }
+    .btn {
+        display: inline-block; margin: 8px; padding: 12px 35px;
+        background: #e74c3c; color: #fff; text-decoration: none;
+        border-radius: 25px; font-weight: bold; transition: 0.2s;
+    }
+    .btn:hover { background: #c0392b; }
+    .btn.logout { background: #95a5a6; }
+    .btn.logout:hover { background: #7f8c8d; }
+    .hint {
+        color: #e67e22; font-size: 14px; margin-top: 22px;
+        line-height: 1.8; background: #fef5e7; padding: 15px 20px;
+        border-radius: 8px; border-left: 4px solid #e67e22; text-align: left;
+    }
+    a { color: #e74c3c; }
+</style>
+</head><body>
+<nav class="navbar">
+    <div class="logo">📖 My<span>Blog</span></div>
+    <div>
+        <a href="/comments">💬 Comments</a>
+        <a href="/login" class="login-btn">🔑 Login</a>
+    </div>
+</nav>
 <div class="container">
+<div class="card">
 <h2>✅ Welcome, admin</h2>
-<p class="sub">You are logged in as administrator.</p>
+<p class="meta">You are logged in as administrator.</p>
 <a class="btn" href="/download">📥 Download Avatar (ZIP, AES)</a>
 <br><br>
 <a class="btn logout" href="/logout">🚪 Logout</a>
-<p class="hint">
+<div class="hint">
     ⚠️ The ZIP is AES-encrypted.<br>
     Only the admin bot holds the key cookie <code>zip_pass</code>.<br>
-    Maybe the <a href="/comments" style="color:#0f0">💬 comment section</a> can help you get it.
-</p>
-</div></body></html>
+    Maybe the <a href="/comments">💬 comment section</a> can help you get it.
+</div>
+</div>
+</div>
+</body></html>
+"""
+
+# ==================== 评论页 ====================
+COMMENTS_HTML = """
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Comments</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Georgia', serif; background: #fafafa; color: #222; line-height: 1.8; }
+    .navbar {
+        background: #2c3e50; padding: 18px 40px; display: flex;
+        justify-content: space-between; align-items: center;
+        position: sticky; top: 0; z-index: 100;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .navbar .logo { color: #ecf0f1; font-size: 22px; font-weight: bold; letter-spacing: 1px; }
+    .navbar .logo span { color: #e74c3c; }
+    .navbar a { color: #ecf0f1; margin-left: 18px; text-decoration: none; }
+    .navbar a:hover { color: #e74c3c; }
+    .navbar .login-btn {
+        background: #e74c3c; color: #fff; border: none; padding: 10px 28px;
+        font-size: 14px; border-radius: 25px; cursor: pointer; transition: 0.3s;
+        text-decoration: none; font-weight: bold;
+    }
+    .navbar .login-btn:hover { background: #c0392b; transform: scale(1.05); }
+    .container { max-width: 780px; margin: 50px auto; padding: 0 20px; }
+    .card {
+        background: #fff; padding: 45px 55px; border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+    .card h2 { font-size: 22px; color: #2c3e50; margin-bottom: 10px; }
+    .field { margin-bottom: 15px; }
+    input, textarea {
+        width: 100%; padding: 12px 14px; background: #fff;
+        border: 1px solid #ddd; color: #222; font-size: 15px;
+        border-radius: 6px; outline: none; font-family: inherit;
+        transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus { border-color: #e74c3c; }
+    button {
+        padding: 10px 30px; background: #e74c3c; color: #fff;
+        border: none; font-size: 15px; font-weight: bold;
+        border-radius: 6px; cursor: pointer; transition: 0.2s;
+    }
+    button:hover { background: #c0392b; }
+    .comment { border-bottom: 1px solid #eee; padding: 16px 0; }
+    .comment:last-child { border-bottom: none; }
+    .comment .author { color: #2c3e50; font-weight: bold; }
+    .comment .time { color: #b0b0b0; font-size: 12px; margin-left: 8px; }
+    .comment .body { margin-top: 6px; color: #333; }
+    hr { border: none; border-top: 1px solid #eee; margin: 25px 0; }
+    a { color: #e74c3c; }
+</style>
+</head><body>
+<nav class="navbar">
+    <div class="logo">📖 My<span>Blog</span></div>
+    <div>
+        <a href="/comments">💬 Comments</a>
+        <a href="/login" class="login-btn">🔑 Login</a>
+    </div>
+</nav>
+<div class="container">
+<div class="card">
+<h2>💬 Comments</h2>
+<form method="post" style="margin: 20px 0;">
+  <div class="field">
+    <input name="author" placeholder="Name" value="guest" maxlength="50">
+  </div>
+  <div class="field">
+    <textarea name="content" placeholder="Say something..." rows="3" maxlength="2000"></textarea>
+  </div>
+  <button type="submit">Post</button>
+</form>
+<hr>
+{% for c in comments %}
+  <div class="comment">
+    <span class="author">{{ c[0] }}</span>
+    <span class="time">{{ c[2] }}</span>
+    <div class="body">{{ c[1]|safe }}</div>
+  </div>
+{% endfor %}
+<p style="margin-top:25px;text-align:center;font-size:14px;"><a href="/">← Back to blog</a></p>
+</div>
+</div>
+</body></html>
 """
 
 # ==================== 路由 ====================
@@ -287,6 +431,16 @@ def login():
     error = None
     if request.method == "POST":
         username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+        code = request.form.get("code", "").strip()
+
+        # ---------- 反 UNION 检测（逼盲注） ----------
+        if "union" in username.lower():
+            print(f"[WARN] UNION attempt blocked: {username}")
+            return render_template_string(
+                LOGIN_HTML, error="❌ Suspicious input detected")
+
+        # ---------- 第一步：用户名（SQL 注入点） ----------
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         query = f"SELECT password FROM users WHERE username = '{username}'"
@@ -295,44 +449,30 @@ def login():
             c.execute(query)
             result = c.fetchone()
             conn.close()
-            if result:
-                session["password"] = result[0]
-                session["username"] = username
-                return redirect("/password")
-            error = "❌ User not found"
         except Exception as e:
             conn.close()
-            error = f"❌ Error: {e}"
+            return render_template_string(LOGIN_HTML, error=f"❌ Error: {e}")
+
+        if not result:
+            return render_template_string(LOGIN_HTML, error="❌ User not found")
+
+        db_password = result[0]
+
+        # ---------- 第二步：密码 ----------
+        if password != db_password:
+            return render_template_string(LOGIN_HTML, error="❌ Incorrect password")
+
+        # ---------- 第三步：TOTP ----------
+        totp = pyotp.TOTP(TOTP_SECRET)
+        if not totp.verify(code):
+            return render_template_string(LOGIN_HTML, error="❌ Invalid code")
+
+        # 全部通过
+        session["admin"] = True
+        session["username"] = username
+        return redirect("/dashboard")
+
     return render_template_string(LOGIN_HTML, error=error)
-
-
-@app.route("/password", methods=["GET", "POST"])
-def password_check():
-    if "password" not in session:
-        return redirect("/login")
-    error = None
-    if request.method == "POST":
-        password = request.form.get("password", "").strip()
-        if password == session["password"]:
-            session["totp_secret"] = TOTP_SECRET
-            return redirect("/totp")
-        error = "❌ Incorrect password"
-    return render_template_string(PASSWORD_HTML, error=error)
-
-
-@app.route("/totp", methods=["GET", "POST"])
-def totp_check():
-    if "totp_secret" not in session:
-        return redirect("/login")
-    error = None
-    if request.method == "POST":
-        code = request.form.get("code", "").strip()
-        totp = pyotp.TOTP(session["totp_secret"])
-        if totp.verify(code):
-            session["admin"] = True
-            return redirect("/dashboard")
-        error = "❌ Invalid code"
-    return render_template_string(TOTP_HTML, error=error)
 
 
 @app.route("/dashboard")
@@ -340,37 +480,6 @@ def dashboard():
     if not session.get("admin"):
         return redirect("/login")
     return render_template_string(DASHBOARD_HTML)
-
-
-# ==================== 评论（存储型 XSS）====================
-COMMENTS_HTML = """
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Comments</title>
-<style>
-body{font-family:monospace;background:#0a0a0a;color:#0f0;padding:30px;}
-.box{max-width:760px;margin:auto;background:#111;border:1px solid #0f0;padding:25px;border-radius:10px;}
-h2{color:#0f0;} .c{border-bottom:1px solid #333;padding:12px 0;}
-input,textarea{width:100%;background:#1a1a1a;border:1px solid #0f0;color:#0f0;padding:8px;margin:5px 0;font-family:monospace;}
-button{background:#0f0;color:#000;border:none;padding:8px 20px;font-weight:bold;cursor:pointer;}
-a{color:#0f0;}
-</style></head><body>
-<div class="box">
-<h2>💬 Comments</h2>
-<form method="post">
-  <input name="author" placeholder="Name" value="guest" maxlength="50">
-  <textarea name="content" placeholder="Say something..." rows="3" maxlength="2000"></textarea>
-  <button type="submit">Post</button>
-</form>
-<hr>
-{% for c in comments %}
-  <div class="c">
-    <b>{{ c[0] }}</b> <small style="color:#666">({{ c[2] }})</small><br>
-    {{ c[1]|safe }}
-  </div>
-{% endfor %}
-<p style="margin-top:20px"><a href="/">← Back to blog</a></p>
-</div>
-</body></html>
-"""
 
 
 @app.route("/comments", methods=["GET", "POST"])
@@ -459,12 +568,6 @@ def logout():
 
 
 def bot_worker():
-    """
-    管理员 bot：
-    每 30 秒打开一次 /comments 页面，浏览器里带有 cookie:
-        zip_pass = ZIP_PASSWORD
-    如果评论里存在 XSS，就能把 zip_pass 外带出去。
-    """
     from playwright.sync_api import sync_playwright
 
     while True:
@@ -480,13 +583,13 @@ def bot_worker():
                     "value": ZIP_PASSWORD,
                     "domain": "127.0.0.1",
                     "path": "/",
-                    "httpOnly": False,   # 让 document.cookie 可读，XSS 才能偷到
+                    "httpOnly": False,
                     "secure": False,
                     "sameSite": "Lax",
                 }])
                 page = ctx.new_page()
                 page.goto("http://127.0.0.1:8010/comments", timeout=10000)
-                page.wait_for_timeout(4000)   # 给 XSS 时间执行
+                page.wait_for_timeout(4000)
                 browser.close()
         except Exception as e:
             print(f"[bot] error: {e}")
