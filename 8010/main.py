@@ -4,7 +4,6 @@ import time
 import random
 import sqlite3
 import threading
-import zipfile
 
 import pyotp
 import pyzipper
@@ -78,9 +77,6 @@ def init_db():
     """)
     c.execute("DELETE FROM users")
     c.execute("DELETE FROM comments")
-
-    c.execute("INSERT INTO users (username, password) VALUES (?, ?)",
-              ("guest", "guest123"))
     admin_password = "".join(random.choices(
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=12))
     c.execute("INSERT INTO users (username, password) VALUES (?, ?)",
