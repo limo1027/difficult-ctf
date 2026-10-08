@@ -1,38 +1,40 @@
-from flask import Flask, request, render_template_string, session
-import random
 import os
 import io
-import contextlib
+import time
+import random
+import platform
 import subprocess
-import re
-import fnmatch
 import threading
 import queue
-import time
+import re
+import fnmatch
+import contextlib
+
+from flask import Flask, request, render_template_string, session
 
 app = Flask(__name__)
 app.secret_key = os.urandom(32).hex()
 
-if os.path.exists("flag.txt"):
-    FLAG = open("flag.txt").read()
-else:
-    FLAG = \
-        "ctfhub{" + "".join(random.choices("1234567890ABCDEF", k=20)) + "}"
-with open("flag.txt", mode='w') as f:
-    f.write(FLAG)
+IS_WINDOWS = platform.system() == "Windows"
 
-# ==================== Windows 文件系统 ====================
+# ==================== Flag ====================
+if os.path.exists("flag.txt"):
+    FLAG = open("flag.txt").read().strip()
+else:
+    FLAG = "ctfhub{" + "".join(random.choices("0123456789ABCDEF", k=20)) + "}"
+    with open("flag.txt", "w") as f:
+        f.write(FLAG)
+
+# ==================== 文件系统 ====================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CTF_DIR = os.path.join(BASE_DIR, "ctf_8009")
 FLAG_FILE = os.path.join(CTF_DIR, "flag.txt")
 
 os.makedirs(CTF_DIR, exist_ok=True)
 
-# 创建 FLAG 文件
 with open(FLAG_FILE, "w") as f:
     f.write(f"🏁 {FLAG}\n")
 
-# 创建一些普通文件
 with open(os.path.join(CTF_DIR, "hello.txt"), "w") as f:
     f.write("Hello, world!\nTry to find the flag.")
 
@@ -46,8 +48,8 @@ with open(os.path.join(CTF_DIR, "hint.py"), "w") as f:
 print("Try to escape the sandbox!")
 """)
 
-with open(os.path.join(CTF_DIR, "flask_config.txt"), "w") as f:
-    f.write("FLASK_APP=main.py\nFLASK_ENV=development\nThis is not the flag.")
+with open(os.path.join(CTF_DIR, "notes.txt"), "w") as f:
+    f.write("Nothing interesting here.")
 
 # ==================== 持久 Shell ====================
 
@@ -60,16 +62,22 @@ class PersistentCmd:
         self._start()
 
     def _start(self):
+        if IS_WINDOWS:
+            shell_cmd = "cmd.exe"
+        else:
+            shell_cmd = "/bin/sh"
+
         self.process = subprocess.Popen(
-            'cmd.exe',
+            shell_cmd,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
             cwd=self.cwd,
-            bufsize=0
+            bufsize=0,
         )
-        self.reader_thread = threading.Thread(target=self._reader, daemon=True)
+        self.reader_thread = threading.Thread(
+            target=self._reader, daemon=True)
         self.reader_thread.start()
 
     def _reader(self):
@@ -80,15 +88,15 @@ class PersistentCmd:
             self.output_queue.put(line)
 
     def execute(self, cmd):
-        self.process.stdin.write(cmd + '\n')
+        self.process.stdin.write(cmd + "\n")
         self.process.stdin.flush()
-        time.sleep(0.05)
+        time.sleep(0.15)  # 给 shell 一点时间输出
 
         output = []
         while not self.output_queue.empty():
             output.append(self.output_queue.get())
 
-        result = ''.join(output)
+        result = "".join(output)
         return result.strip() or "执行完成"
 
     def close(self):
@@ -97,7 +105,6 @@ class PersistentCmd:
             self.process = None
 
 
-# 全局 Shell
 shell = PersistentCmd(CTF_DIR)
 
 # ==================== Python 沙箱 ====================
@@ -105,64 +112,61 @@ shell = PersistentCmd(CTF_DIR)
 
 def run_python_code(code):
     """在受限沙箱中执行 Python 代码"""
-
     blacklist = [
-        '__import__', 'exec', 'eval', 'compile',
-        'open', 'file', '__builtins__', '__globals__',
-        'subprocess', 'os', 'system', 'popen',
-        '__class__', '__bases__', '__subclasses__',
-        '__closure__', 'cell_contents', '__dict__',
-        'globals', 'locals', 'vars', 'dir',
-        'getattr', 'setattr', 'hasattr', '__getattr__',
-        'FLAG', 'flag',
+        "__import__", "exec", "eval", "compile",
+        "open", "file", "__builtins__", "__globals__",
+        "subprocess", "os", "system", "popen",
+        "__class__", "__bases__", "__subclasses__",
+        "__closure__", "cell_contents", "__dict__",
+        "globals", "locals", "vars", "dir",
+        "getattr", "setattr", "hasattr", "__getattr__",
+        "FLAG", "flag", "mro", "__mro__",
     ]
     for word in blacklist:
         if word in code:
             return f"🚫 Access denied: '{word}' is blocked"
 
     safe_builtins = {
-        'print': print,
-        'len': len,
-        'str': str,
-        'int': int,
-        'float': float,
-        'bool': bool,
-        'list': list,
-        'dict': dict,
-        'tuple': tuple,
-        'set': set,
-        'range': range,
-        'zip': zip,
-        'enumerate': enumerate,
-        'sum': sum,
-        'max': max,
-        'min': min,
-        'abs': abs,
-        'round': round,
-        'sorted': sorted,
-        'reversed': reversed,
-        'chr': chr,
-        'ord': ord,
-        'hex': hex,
-        'oct': oct,
-        'bin': bin,
-        'type': type,
-        'isinstance': isinstance,
-        'issubclass': issubclass,
+        "print": print,
+        "len": len,
+        "str": str,
+        "int": int,
+        "float": float,
+        "bool": bool,
+        "list": list,
+        "dict": dict,
+        "tuple": tuple,
+        "set": set,
+        "range": range,
+        "zip": zip,
+        "enumerate": enumerate,
+        "sum": sum,
+        "max": max,
+        "min": min,
+        "abs": abs,
+        "round": round,
+        "sorted": sorted,
+        "reversed": reversed,
+        "chr": chr,
+        "ord": ord,
+        "hex": hex,
+        "oct": oct,
+        "bin": bin,
+        "type": type,
+        "isinstance": isinstance,
+        "issubclass": issubclass,
     }
 
     safe_globals = {
-        '__builtins__': safe_builtins,
-        '__name__': '__main__',
-        'CTF_DIR': CTF_DIR,
+        "__builtins__": safe_builtins,
+        "__name__": "__main__",
+        "CTF_DIR": CTF_DIR,
     }
 
     def fake_open(path, *args, **kwargs):
-        if "flag" in str(path).lower():
-            raise PermissionError(f"Permission denied: {path}")
         raise PermissionError(f"Permission denied: {path}")
 
-    safe_globals['open'] = fake_open
+    safe_globals["open"] = fake_open
 
     output = io.StringIO()
     try:
@@ -176,8 +180,11 @@ def run_python_code(code):
 
 
 def expand_wildcards(pattern):
-    """展开 Windows 通配符，返回匹配的文件列表"""
-    all_files = os.listdir(CTF_DIR)
+    """展开 shell 通配符，返回匹配的文件列表"""
+    try:
+        all_files = os.listdir(CTF_DIR)
+    except Exception:
+        return []
     matched = []
     for f in all_files:
         if fnmatch.fnmatch(f, pattern):
@@ -187,12 +194,14 @@ def expand_wildcards(pattern):
 
 def check_flag_access(file_pattern):
     """检查文件模式是否匹配 flag.txt（包括通配符展开）"""
-    if re.search(r'flag', file_pattern, re.IGNORECASE):
+    # 直接包含 flag 字样
+    if re.search(r"flag", file_pattern, re.IGNORECASE):
         return True
 
+    # 通配符展开后是否命中 flag
     matched = expand_wildcards(file_pattern)
     for f in matched:
-        if re.search(r'flag', f, re.IGNORECASE):
+        if re.search(r"flag", f, re.IGNORECASE):
             return True
 
     return False
@@ -201,22 +210,28 @@ def check_flag_access(file_pattern):
 
 
 def execute_real_command(cmd):
-    """在持久 Shell 中执行命令（有限制）"""
+    """在持久 shell 中执行命令（有限制）"""
     parts = cmd.split()
     if not parts:
         return ""
 
     base_cmd = parts[0].lower()
-    allowed_commands = ['dir', 'cd', 'type', 'echo', 'whoami']
+
+    if IS_WINDOWS:
+        allowed_commands = ["dir", "cd", "type", "echo", "whoami"]
+        read_cmd = "type"
+    else:
+        allowed_commands = ["ls", "cd", "cat", "echo", "whoami", "pwd"]
+        read_cmd = "cat"
 
     if base_cmd not in allowed_commands:
         return f"Command not allowed: {base_cmd}"
 
-    # type 命令：检查通配符展开后的文件
-    if base_cmd == 'type' and len(parts) > 1:
-        file_pattern = parts[1]
-        if check_flag_access(file_pattern):
-            return f"type: {file_pattern} - Permission denied"
+    # 读文件命令：检查参数是否命中 flag
+    if base_cmd == read_cmd and len(parts) > 1:
+        for arg in parts[1:]:
+            if check_flag_access(arg):
+                return f"{read_cmd}: {arg} - Permission denied"
 
     return shell.execute(cmd)
 
@@ -228,7 +243,8 @@ def execute_command(cmd):
         return ""
 
     if cmd == "help":
-        return """
+        if IS_WINDOWS:
+            return """
 Available commands (Windows):
   dir                  List files
   cd <dir>             Change directory
@@ -241,6 +257,24 @@ Available commands (Windows):
 
 💡 The flag is in flag.txt, but you can't read it directly.
 💡 type flag.txt will return "Permission denied"
+💡 Python's open() is also blocked.
+💡 Try to find a way around it!
+"""
+        else:
+            return """
+Available commands (Linux):
+  ls                   List files
+  cd <dir>             Change directory
+  cat <file>           Read file (flag.txt is protected)
+  whoami               Show current user
+  pwd                  Show current directory
+  python <code>        Execute Python code (sandboxed!)
+  help                 Show this message
+  clear                Clear screen
+  exit                 Exit terminal
+
+💡 The flag is in flag.txt, but you can't read it directly.
+💡 cat flag.txt will return "Permission denied"
 💡 Python's open() is also blocked.
 💡 Try to find a way around it!
 """
@@ -260,15 +294,14 @@ Available commands (Windows):
 
     return execute_real_command(cmd)
 
+
 # ==================== HTML 模板 ====================
-
-
-TERMINAL = '''
+TERMINAL = """
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>🧑‍💻 CTF Terminal (Windows)</title>
+    <title>🧑‍💻 CTF Terminal</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -344,7 +377,7 @@ TERMINAL = '''
 <body>
 <div class="terminal">
     <div class="header">
-        <span>🧑‍💻 <span class="user">guest</span>@windows-ctf</span>
+        <span>🧑‍💻 <span class="user">guest</span>@ctf-{{ platform }}</span>
         <span class="path">{{ path }}</span>
     </div>
     <div class="output" id="output">
@@ -373,46 +406,60 @@ TERMINAL = '''
 </script>
 </body>
 </html>
-'''
+"""
+
+PLATFORM_NAME = "windows" if IS_WINDOWS else "linux"
 
 # ==================== Flask 路由 ====================
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def index():
-    if 'history' not in session:
-        session['history'] = []
-        session['path'] = CTF_DIR
+    if "history" not in session:
+        session["history"] = []
+        session["path"] = CTF_DIR
 
-    if request.method == 'POST':
-        cmd = request.form.get('cmd', '').strip()
+    if request.method == "POST":
+        cmd = request.form.get("cmd", "").strip()
         if cmd:
-            history = session.get('history', [])
+            history = session.get("history", [])
             history.append(f"$ {cmd}")
 
             result = execute_command(cmd)
 
             if result == "CLEAR":
-                session['history'] = []
-                session['path'] = CTF_DIR
-                return render_template_string(TERMINAL, history=[], output=None, path=CTF_DIR)
-            elif result == "EXIT":
+                session["history"] = []
+                session["path"] = CTF_DIR
+                return render_template_string(
+                    TERMINAL, history=[], output=None,
+                    path=CTF_DIR, platform=PLATFORM_NAME)
+
+            if result == "EXIT":
                 session.clear()
-                return render_template_string(TERMINAL, history=[], output=None, path=CTF_DIR)
-            else:
-                history.append(result)
-                session['history'] = history
-                session['path'] = CTF_DIR
-                return render_template_string(TERMINAL, history=history, output=None, path=CTF_DIR)
+                return render_template_string(
+                    TERMINAL, history=[], output=None,
+                    path=CTF_DIR, platform=PLATFORM_NAME)
 
-    return render_template_string(TERMINAL, history=session.get('history', []), output=None, path=session.get('path', CTF_DIR))
+            history.append(result)
+            session["history"] = history
+            session["path"] = CTF_DIR
+            return render_template_string(
+                TERMINAL, history=history, output=None,
+                path=CTF_DIR, platform=PLATFORM_NAME)
+
+    return render_template_string(
+        TERMINAL, history=session.get("history", []),
+        output=None, path=session.get("path", CTF_DIR),
+        platform=PLATFORM_NAME)
 
 
-@app.route('/reset')
+@app.route("/reset")
 def reset():
     session.clear()
-    return render_template_string(TERMINAL, history=[], output=None, path=CTF_DIR)
+    return render_template_string(
+        TERMINAL, history=[], output=None,
+        path=CTF_DIR, platform=PLATFORM_NAME)
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8009, debug=False)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8009, debug=False)

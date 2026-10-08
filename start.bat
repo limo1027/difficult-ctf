@@ -35,7 +35,7 @@ if not exist "%SCRIPT_DIR%\logs" mkdir "%SCRIPT_DIR%\logs"
 echo.
 echo Starting services...
 
-for /l %%i in (8001,1,8012) do (
+for /l %%i in (8001,1,8013) do (
     if exist "%SCRIPT_DIR%\%%i\main.py" (
         echo [OK] Port %%i
         cd /d "%SCRIPT_DIR%\%%i"
